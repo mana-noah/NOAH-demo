@@ -5,7 +5,7 @@ const frame=document.getElementById('game'),ex=document.getElementById('explore'
 let cw,O,imgs={},map='fountain',px=50,py=72,locked=false,mode='free',lines=[],li=0,optionalFountain=false,stallDone=false,detourStep=0;
 const maps={
  fountain:['HELIOPOLIS / 噴水公園','fountain',[
-  ['子ども',31,48,()=>O.goScene2()],
+  ['子ども',31,48,()=>{if(cw.G.helpedChild||cw.G.leftChild)inspect([{s:'',t:'子どもはもう、落とし物を手にしている。',u:'この出来事は、すでに世界の記憶へ刻まれた。'}]);else O.goScene2()}],
   ['噴水',67,70,()=>{if(optionalFountain)O.goScene3b();else inspect([{s:'',t:'噴水の水音が聞こえる。',u:'今は、特に気になるものはない。'}])}],
   ['屋台',86,58,()=>{if(cw.G.helpedChild||cw.G.leftChild)O.goScene3();else inspect([{s:'',t:'屋台が見える。',u:'まずは噴水広場の子どもを放っておけない気がする。'}])}]
  ]],
