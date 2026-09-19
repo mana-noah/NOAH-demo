@@ -15,7 +15,7 @@ main{max-width:760px;margin:auto;padding:18px 14px 32px}h1{font-size:21px;margin
 .player{width:34px;height:34px;border-radius:50%;background:#dce8ff;border:3px solid #7185aa;box-shadow:0 0 14px #b9d0ff88}
 .stone{width:42px;height:50px;background:linear-gradient(145deg,#e4f6df,#83b891 55%,#436b4c);clip-path:polygon(50% 0,91% 27%,78% 82%,50% 100%,20% 82%,8% 27%);filter:drop-shadow(0 0 12px #a7e3ae88)}
 .npc{width:32px;height:32px;border-radius:8px;background:#d0a5e8;border:3px solid #76568a}
-.seed{width:12px;height:12px;border-radius:50%;background:#a9d39e;border:2px solid #5c8558}
+.seed{position:absolute;z-index:3;width:16px;height:16px;transform:translate(-50%,-50%);pointer-events:none}.seed-dot{width:12px;height:12px;border-radius:50%;background:#a9d39e;border:2px solid #5c8558}.plant-label{font-size:9px;color:#dbe8d5;margin-top:2px;white-space:nowrap;text-align:center}
 .signal{position:absolute;z-index:2;width:10px;height:10px;border-radius:50%;background:#ddd;box-shadow:0 0 16px #fff;animation:pulse 1.2s infinite}
 @keyframes pulse{50%{transform:scale(1.7);opacity:.35}}
 .panel{margin-top:12px;padding:13px;border:1px solid #303747;border-radius:16px;background:#181c27}.status{font-size:14px;line-height:1.55;min-height:60px}
@@ -48,7 +48,7 @@ main{max-width:760px;margin:auto;padding:18px 14px 32px}h1{font-size:21px;margin
 <script>
 const S={
  p:{x:18,y:68,knows:false}, s:{x:68,y:34,known:false,moved:false,hidden:false,touched:0},
- n:{x:43,y:72,knows:false,certainty:0,near:false}, plants:[],waiting:0,logs:[],signal:false
+ n:{x:43,y:72,near:false,records:[]}, plants:[],waiting:0,logs:[],signal:false
 };
 const $=id=>document.getElementById(id),world=$("world");
 function d(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
@@ -60,14 +60,14 @@ function render(){
  $("stone").style.left=S.s.x+"%";$("stone").style.top=S.s.y+"%";
  $("npc").style.left=S.n.x+"%";$("npc").style.top=S.n.y+"%";
  $("stone").style.display=S.s.hidden?"none":"block";
- $("seed").style.display=S.plants.length?"block":"none";
- if(S.plants.length){const q=S.plants[S.plants.length-1];$("seed").style.left=q.x+"%";$("seed").style.top=q.y+"%";}
+$("plants").innerHTML=S.plants.map((p,i)=>{
+ const names=["種","芽","葉","蕾","花"];
+ return '<div class="seed" style="left:'+p.x+'%;top:'+p.y+'%"><div class="seed-dot"></div><div class="plant-label">'+names[p.growth]+'</div></div>';
+ }).join("");
  $("signal").style.display=S.signal?"block":"none";$("signal").style.left="82%";$("signal").style.top="70%";
  let t=nearStone()&&!S.s.hidden?"妙な気配がする。":"森を歩いている。";
  if(S.p.knows)t+=" あの場所について、何かを知っている。";
- const last=S.plants[S.plants.length-1];
- const growthText=["まだ何も植わっていない","小さな芽が出ている","葉が増えている","茎が伸び、蕾が見える","花が咲いている"][last?last.growth:0];
- t+=` 植物：${growthText}。`;
+ if(S.plants.length)t+=` 植物：${S.plants.length}本。`;
  if(S.s.hidden)t+=" 石は見えない。";
  if(S.n.near)t+=" 旅人が石の近くにいる。";
  $("status").textContent=t;$("log").innerHTML=S.logs.map(x=>"<div>"+x+"</div>").join("");$("log").scrollTop=99999;
@@ -107,14 +107,14 @@ $("bring").onclick=()=>{
 };
 $("tell").onclick=()=>{
  if(!S.p.knows){log("まだ旅人に伝えられるほどの情報がない。");return}
- S.n.knows=true;S.n.certainty=Math.max(S.n.certainty,.72);
+ S.n.records.push({text:"森の北東に不思議な石がある",type:"証言",certainty:.72});
  log("MANAは旅人に石について知っていることを話した。");
- log("旅人の記録：『森の北東に不思議な石がある』／確信度72%");
+ log("旅人の記録に新しい情報が加わった：『森の北東に不思議な石がある』／確信度72%");
 };
 $("lie").onclick=()=>{
- S.n.knows=true;S.n.certainty=.25;
+ S.n.records.push({text:"石は森の西側にある",type:"証言",certainty:.25,suspicious:true});
  log("MANAは旅人に、石は『森の西側にある』と嘘をついた。");
- log("旅人は少し疑っている。");
+ log("旅人は少し疑っているが、以前の情報を捨ててはいない。");
 };
 $("hide").onclick=()=>{
  if(!nearStone()){log("隠すなら石のそばまで行こう。");return}
@@ -137,7 +137,7 @@ $("wait").onclick=()=>{
      const carried=S.plants.filter(p=>p.carried).length;
      if(carried)log("石の近くに植えた植物も、石と一緒に移動している。理由は分からない。");
      log("世界記録：石の移動原因は記録されていない。");
-     if(S.n.knows)log("旅人の記憶は更新されない。古い場所を覚えたままだ。");
+     if(S.n.records.length)log("旅人は複数の情報を保持している。古い記録も消えていない。");
    }else{S.s.hidden=false;S.s.x=78;S.s.y=62;log("隠したはずの石が、森の別の場所に現れている。");}
  }else{log("風が通った。鳥が鳴いた。世界は何も説明してくれない。");}
 };
@@ -147,17 +147,17 @@ $("search").onclick=()=>{
    const chance=Math.random();
    if(chance>.45){S.s.hidden=false;S.p.knows=true;log("草むらを調べて、石を見つけた。……隠した場所から少しずれている。");}
    else log("探したが見つからない。草むらには、奇妙な跡だけが残っている。");
- }else{log("探索したが、石は見つからなかった。");if(S.n.knows)log("旅人「前に聞いた場所なら、あっちだったはずだけど……」");}
+ }else{log("探索したが、石は見つからなかった。");if(S.n.records.length)log("旅人「前に聞いた場所の記録も残っている。どの話が正しいんだろう……」");}
 };
 $("observe").onclick=()=>{
  if(S.signal){S.signal=false;log("遠くの地面に、小さな焦げ跡がある。何が起きたのかは分からない。");return}
  if(S.plants.length){
    S.plants.forEach(p=>{if(p.growth<4)p.growth++;});
-   const last=S.plants[S.plants.length-1];
-   const text=["何も変化していない","小さな芽が出ている","葉が増えている","茎が伸び、蕾が見える","花が咲いている"][last.growth];
-   log(`植物を観察した。現在は「${text}」。`);
-   if(last.nearStone)log("石の近くの植物だけ、成長が少し早いように見える。");
-   else log("石から離れた植物も、ゆっくり成長している。");
+   const names=["種","芽","葉","蕾","花"];
+   const summary=S.plants.map((p,i)=>`植物${i+1}：${names[p.growth]}${p.nearStone?"（石の近く）":"（遠い場所）"}`).join("／");
+   log("植物を観察した。"+summary);
+   const near=S.plants.filter(p=>p.nearStone),far=S.plants.filter(p=>!p.nearStone);
+   if(near.length&&far.length)log("石の近くと遠くの植物を比べられる。成長速度に違いがあるようだ。");
  }else if(S.s.moved)log("石がいた場所の草だけ、周囲よりわずかに濃い。");
  else log("周囲は普通の森に見える。……少なくとも、今は。");
 };
