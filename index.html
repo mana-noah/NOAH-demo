@@ -30,7 +30,7 @@ main{max-width:760px;margin:auto;padding:18px 14px 32px}h1{font-size:21px;margin
 <div id="world">
 <div class="label">森 ― 好きな場所をタップして歩く</div>
 <div id="player" class="obj player"></div><div id="stone" class="obj stone"></div><div id="npc" class="obj npc"></div>
-<div id="seed" class="obj seed" style="display:none"></div><div id="signal" class="signal" style="display:none"></div>
+<div id="plants"></div><div id="signal" class="signal" style="display:none"></div>
 </div>
 <div class="panel">
 <div id="status" class="status"></div>
@@ -103,7 +103,7 @@ $("bring").onclick=()=>{
  if(!S.p.knows){log("まずは自分で何か見つけてみよう。");return}
  S.n.x=S.s.x-18;S.n.y=S.s.y+18;S.n.near=true;
  log("MANAは旅人を石の近くまで連れてきた。");
- if(S.seed)log("旅人「……植物まで、ここの周りだけ妙だね。」");
+ if(S.plants.length)log("旅人「……植物まで、ここの周りだけ妙だね。」");
 };
 $("tell").onclick=()=>{
  if(!S.p.knows){log("まだ旅人に伝えられるほどの情報がない。");return}
