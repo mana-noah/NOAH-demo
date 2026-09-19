@@ -54,6 +54,8 @@ const $=id=>document.getElementById(id),world=$("world");
 function d(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
 function nearStone(){return d(S.p,S.s)<15}
 function nearNpc(){return d(S.p,S.n)<15}
+function region(x,y){if(y<45&&x>55)return "北東";if(y<45&&x<=55)return "北西";if(y>=45&&x>55)return "南東";return "南西"}
+function memoryText(){return S.n.records.map((r,i)=>`${i+1}. 「${r.text}」／確信度${Math.round(r.certainty*100)}%${r.suspicious?"／疑わしい":""}`).join("  ")}
 function log(t){S.logs.push(t);render()}
 function render(){
  $("player").style.left=S.p.x+"%";$("player").style.top=S.p.y+"%";
@@ -70,6 +72,7 @@ $("plants").innerHTML=S.plants.map((p,i)=>{
  if(S.plants.length)t+=` 植物：${S.plants.length}本。`;
  if(S.s.hidden)t+=" 石は見えない。";
  if(S.n.near)t+=" 旅人が石の近くにいる。";
+ if(S.n.records.length)t+=` 旅人の記録：${S.n.records.length}件。`;
  $("status").textContent=t;$("log").innerHTML=S.logs.map(x=>"<div>"+x+"</div>").join("");$("log").scrollTop=99999;
 }
 world.addEventListener("pointerup",e=>{
@@ -96,7 +99,13 @@ $("plant").onclick=()=>{
 };
 $("talk").onclick=()=>{
  if(S.n.near){
-   log(S.n.knows?"旅人「近くで見ると……やっぱり変だな。この石、誰かの後を追ってるのか？」":"旅人「この近く、なんだか落ち着かないね。」");
+   if(S.n.records.length===0) log("旅人「この近く、なんだか落ち着かないね。」");
+   else if(S.n.records.length===1) log(`旅人「前に聞いた話では、石は森の${region(S.s.x,S.s.y)}にあるんだよね。」`);
+   else {
+     log("旅人の記憶："+memoryText());
+     log("旅人「前は北東だと聞いた。でも今は別の場所だと言われた……どっちが本当なんだろう？」");
+     if(!S.s.hidden) log(`旅人「実際の石は今、森の${region(S.s.x,S.s.y)}にあるみたいだね。」`);
+   }
  }else log("旅人「この森には、昔から変な場所があるらしいよ。」");
 };
 $("bring").onclick=()=>{
@@ -139,7 +148,21 @@ $("wait").onclick=()=>{
      log("世界記録：石の移動原因は記録されていない。");
      if(S.n.records.length)log("旅人は複数の情報を保持している。古い記録も消えていない。");
    }else{S.s.hidden=false;S.s.x=78;S.s.y=62;log("隠したはずの石が、森の別の場所に現れている。");}
- }else{log("風が通った。鳥が鳴いた。世界は何も説明してくれない。");}
+ }else{
+   const roll=Math.random();
+   if(roll<0.18){log("風が止まった。森の音が一瞬だけ遠くなる。");}
+   else if(roll<0.36){S.n.x=Math.max(8,Math.min(92,S.n.x+(Math.random()-.5)*24));S.n.y=Math.max(12,Math.min(88,S.n.y+(Math.random()-.5)*20));S.n.near=false;log("気づくと、旅人の姿が少し遠くなっている。");}
+   else if(roll<0.54){S.plants.forEach(p=>{if(Math.random()<.6)p.growth=Math.min(4,p.growth+1)});if(S.plants.length)log("森のどこかで、植物の葉が揺れた。いくつかの植物が少し成長している。");else log("遠くで鳥が一度だけ鳴いた。");}
+   else if(roll<0.72){S.signal=true;log("森の奥で、何かが地面を擦るような音がした。");}
+   else if(roll<0.9 && !S.s.hidden){
+     const old={x:S.s.x,y:S.s.y},spots=[[78,62],[25,25],[61,78],[83,25]],q=spots[Math.floor(Math.random()*spots.length)];
+     const dx=q[0]-old.x,dy=q[1]-old.y;S.s.x=q[0];S.s.y=q[1];S.s.moved=true;
+     S.plants.forEach(p=>{if(p.nearStone){p.x+=dx;p.y+=dy;p.carried=true;p.growth=Math.min(4,p.growth+1)}});
+     log("……視線を戻すと、石が別の場所にある。");
+     const carried=S.plants.filter(p=>p.carried).length;if(carried)log("石の近くに植えた植物も、一緒に移動している。");
+     log("世界記録：石の移動原因は記録されていない。");
+   }else log("しばらく待った。何も起きなかった……ように見える。");
+ }
 };
 $("search").onclick=()=>{
  if(!S.s.hidden && nearStone()){S.p.knows=true;log("探索の末、石を見つけた。");return}
