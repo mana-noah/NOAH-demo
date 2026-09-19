@@ -48,7 +48,7 @@ main{max-width:760px;margin:auto;padding:18px 14px 32px}h1{font-size:21px;margin
 <script>
 const S={
  p:{x:18,y:68,knows:false}, s:{x:68,y:34,known:false,moved:false,hidden:false,touched:0},
- n:{x:43,y:72,knows:false,certainty:0,near:false}, growth:0,seed:false,waiting:0,logs:[],signal:false
+ n:{x:43,y:72,knows:false,certainty:0,near:false}, plants:[],waiting:0,logs:[],signal:false
 };
 const $=id=>document.getElementById(id),world=$("world");
 function d(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
@@ -60,11 +60,14 @@ function render(){
  $("stone").style.left=S.s.x+"%";$("stone").style.top=S.s.y+"%";
  $("npc").style.left=S.n.x+"%";$("npc").style.top=S.n.y+"%";
  $("stone").style.display=S.s.hidden?"none":"block";
- $("seed").style.display=S.seed?"block":"none";$("seed").style.left=(S.s.x+8)+"%";$("seed").style.top=(S.s.y+5)+"%";
+ $("seed").style.display=S.plants.length?"block":"none";
+ if(S.plants.length){const q=S.plants[S.plants.length-1];$("seed").style.left=q.x+"%";$("seed").style.top=q.y+"%";}
  $("signal").style.display=S.signal?"block":"none";$("signal").style.left="82%";$("signal").style.top="70%";
  let t=nearStone()&&!S.s.hidden?"妙な気配がする。":"森を歩いている。";
  if(S.p.knows)t+=" あの場所について、何かを知っている。";
- t+=` 植物の変化：${S.growth}段階。`;
+ const last=S.plants[S.plants.length-1];
+ const growthText=["まだ何も植わっていない","小さな芽が出ている","葉が増えている","茎が伸び、蕾が見える","花が咲いている"][last?last.growth:0];
+ t+=` 植物：${growthText}。`;
  if(S.s.hidden)t+=" 石は見えない。";
  if(S.n.near)t+=" 旅人が石の近くにいる。";
  $("status").textContent=t;$("log").innerHTML=S.logs.map(x=>"<div>"+x+"</div>").join("");$("log").scrollTop=99999;
@@ -85,11 +88,11 @@ $("touch").onclick=()=>{
  else log("今回は何も起きない。……本当に？");
 };
 $("plant").onclick=()=>{
- if(!nearStone()){log("植物を植えるなら、もう少し石の近くで試した方がよさそうだ。");return}
- S.seed=true;S.growth++;
- log("石の近くに小さな種を植えた。");
- if(S.s.touched>0)log("土の中から、ほんの一瞬だけ淡い光が見えた。");
- else log("今のところ、普通の種にしか見えない。");
+ const x=S.p.x,y=S.p.y, near=nearStone()&&!S.s.hidden;
+ const p={x,y,growth:1,nearStone:near};
+ S.plants.push(p);
+ log(near?"石の近くに小さな種を植えた。":"森の一角に小さな種を植えた。");
+ log(near?(S.s.touched>0?"土の中から、ほんの一瞬だけ淡い光が見えた。":"今のところ、普通の種にしか見えない。"):"石から離れた場所では、今のところ普通の種に見える。");
 };
 $("talk").onclick=()=>{
  if(S.n.near){
@@ -124,10 +127,15 @@ $("wait").onclick=()=>{
  if(S.waiting===1){S.signal=true;log("遠くで、何かが一度だけ光った。");}
  else if(S.waiting===2){
    S.signal=false;
+   const old={x:S.s.x,y:S.s.y};const spots=[[78,62],[25,25],[61,78],[83,25]];
+   const q=spots[Math.floor(Math.random()*spots.length)];
+   const dx=q[0]-old.x,dy=q[1]-old.y;
    if(!S.s.hidden){
-     const old={x:S.s.x,y:S.s.y};const spots=[[78,62],[25,25],[61,78],[83,25]];
-     const q=spots[Math.floor(Math.random()*spots.length)];S.s.x=q[0];S.s.y=q[1];S.s.moved=true;S.growth++;
+     S.s.x=q[0];S.s.y=q[1];S.s.moved=true;
+     S.plants.forEach(p=>{if(p.nearStone){p.x+=dx;p.y+=dy;p.carried=true;p.growth=Math.min(4,p.growth+1);}});
      log("……いつの間にか、石が別の場所にある。");
+     const carried=S.plants.filter(p=>p.carried).length;
+     if(carried)log("石の近くに植えた植物も、石と一緒に移動している。理由は分からない。");
      log("世界記録：石の移動原因は記録されていない。");
      if(S.n.knows)log("旅人の記憶は更新されない。古い場所を覚えたままだ。");
    }else{S.s.hidden=false;S.s.x=78;S.s.y=62;log("隠したはずの石が、森の別の場所に現れている。");}
@@ -143,11 +151,18 @@ $("search").onclick=()=>{
 };
 $("observe").onclick=()=>{
  if(S.signal){S.signal=false;log("遠くの地面に、小さな焦げ跡がある。何が起きたのかは分からない。");return}
- if(S.seed&&S.growth>0)log("植えた種の芽が、季節より少し早く伸びている。石との関係は分からない。");
- else if(S.s.moved)log("石がいた場所の草だけ、周囲よりわずかに濃い。");
+ if(S.plants.length){
+   S.plants.forEach(p=>{if(p.growth<4)p.growth++;});
+   const last=S.plants[S.plants.length-1];
+   const text=["何も変化していない","小さな芽が出ている","葉が増えている","茎が伸び、蕾が見える","花が咲いている"][last.growth];
+   log(`植物を観察した。現在は「${text}」。`);
+   if(last.nearStone)log("石の近くの植物だけ、成長が少し早いように見える。");
+   else log("石から離れた植物も、ゆっくり成長している。");
+ }else if(S.s.moved)log("石がいた場所の草だけ、周囲よりわずかに濃い。");
  else log("周囲は普通の森に見える。……少なくとも、今は。");
 };
 log("世界が生成された。森には、ひとつの『何か』が存在している。");
+log("植える場所は自由だ。石の近くと遠くで、何か違いがあるかもしれない。");
 render();
 </script>
 </body>
