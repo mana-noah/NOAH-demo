@@ -2,191 +2,62 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#10131b">
-<title>六界石・実験場プロトタイプ</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>六界石・最小体験プロトタイプ v2</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#0f1219;color:#eef2f7;font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif}
-main{max-width:760px;margin:auto;padding:18px 14px 32px}h1{font-size:21px;margin:0 0 5px}.sub{font-size:13px;color:#aeb7c7;line-height:1.5;margin-bottom:14px}
-#world{position:relative;height:390px;border:1px solid #303747;border-radius:18px;overflow:hidden;background:linear-gradient(#17271b,#0c1510);touch-action:manipulation;user-select:none;-webkit-user-select:none}
-#world:before{content:"";position:absolute;inset:0;opacity:.2;background-image:linear-gradient(35deg,transparent 48%,#718064 49%,transparent 51%),linear-gradient(-35deg,transparent 48%,#718064 49%,transparent 51%);background-size:90px 90px}
-.label{position:absolute;z-index:2;left:12px;top:10px;font-size:12px;color:#d9e2d6;pointer-events:none}
-.obj{position:absolute;z-index:3;transform:translate(-50%,-50%);pointer-events:none}
-.player{width:34px;height:34px;border-radius:50%;background:#dce8ff;border:3px solid #7185aa;box-shadow:0 0 14px #b9d0ff88}
-.stone{width:42px;height:50px;background:linear-gradient(145deg,#e4f6df,#83b891 55%,#436b4c);clip-path:polygon(50% 0,91% 27%,78% 82%,50% 100%,20% 82%,8% 27%);filter:drop-shadow(0 0 12px #a7e3ae88)}
-.npc{width:32px;height:32px;border-radius:8px;background:#d0a5e8;border:3px solid #76568a}
-.seed{position:absolute;z-index:3;width:16px;height:16px;transform:translate(-50%,-50%);pointer-events:none}.seed-dot{width:12px;height:12px;border-radius:50%;background:#a9d39e;border:2px solid #5c8558}.plant-label{font-size:9px;color:#dbe8d5;margin-top:2px;white-space:nowrap;text-align:center}
-.signal{position:absolute;z-index:2;width:10px;height:10px;border-radius:50%;background:#ddd;box-shadow:0 0 16px #fff;animation:pulse 1.2s infinite}
-@keyframes pulse{50%{transform:scale(1.7);opacity:.35}}
-.panel{margin-top:12px;padding:13px;border:1px solid #303747;border-radius:16px;background:#181c27}.status{font-size:14px;line-height:1.55;min-height:60px}
-.buttons{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:10px}button{border:1px solid #3b4558;background:#222838;color:#fff;border-radius:12px;min-height:48px;font-size:14px;font-weight:600}button:active{background:#30394d;transform:scale(.98)}
-.log{margin-top:10px;max-height:190px;overflow:auto;font-size:12px;line-height:1.6;color:#c9d0dd}.log div{padding:5px 0;border-bottom:1px solid #272d39}.note{color:#8f99aa;font-size:11px;margin-top:9px}
+:root{--bg:#10121a;--panel:#181c27;--line:#303747;--text:#eef2f7;--muted:#aeb7c7;--accent:#b7e5c0;--clue:#d9c48b}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif}
+main{max-width:760px;margin:auto;padding:16px 14px 28px}
+h1{font-size:20px;margin:0 0 4px}.sub{font-size:12px;color:var(--muted);line-height:1.55;margin-bottom:12px}
+.world{position:relative;height:390px;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:linear-gradient(#1a2a1d,#111b14 72%,#0e1511);touch-action:none;user-select:none}
+.world:before{content:"";position:absolute;inset:0;opacity:.23;background-image:linear-gradient(35deg,transparent 48%,#6c805d 49%,transparent 51%),linear-gradient(-35deg,transparent 48%,#6c805d 49%,transparent 51%);background-size:90px 90px}
+.compass{position:absolute;right:12px;top:10px;z-index:4;font-size:11px;color:#d6ddce;line-height:1.25;text-align:center;opacity:.75}.compass b{font-size:13px}
+.region{position:absolute;z-index:1;border:1px dashed rgba(214,221,206,.18);border-radius:50%;pointer-events:none}.region.ne{left:55%;top:8%;width:38%;height:38%}.region.center{left:28%;top:31%;width:40%;height:38%}.region.sw{left:7%;top:58%;width:38%;height:30%}
+.region-label{position:absolute;z-index:2;font-size:9px;color:rgba(214,221,206,.42);pointer-events:none}.r-ne{right:14%;top:43%}.r-center{left:39%;top:67%}.r-sw{left:10%;top:84%}
+.player,.npc{position:absolute;z-index:5;transform:translate(-50%,-50%);user-select:none}.player{width:34px;height:34px;border-radius:50%;background:#dce8ff;border:3px solid #7185aa;box-shadow:0 0 14px #b9d0ff88}.player:after{content:"MANA";position:absolute;top:35px;left:50%;transform:translateX(-50%);font-size:10px;color:#dce8ff;white-space:nowrap}
+.npc{width:32px;height:32px;border-radius:8px;background:#d0a5e8;border:3px solid #76568a}.npc:after{content:"旅人";position:absolute;top:34px;left:50%;transform:translateX(-50%);font-size:10px;color:#e7d9ef;white-space:nowrap}
+.panel{margin-top:10px;padding:12px;border:1px solid var(--line);border-radius:16px;background:var(--panel)}
+.status{font-size:13px;line-height:1.55;min-height:42px}.buttons{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:9px}button{border:1px solid #3b4558;background:#222838;color:var(--text);border-radius:12px;min-height:47px;font-size:14px;font-weight:600}button:active{transform:scale(.98);background:#2b3345}button:disabled{opacity:.35}.primary{border-color:#5d7965;background:#203027}.locked{border-color:#4d4a3d;color:#d8cfaa}
+.log{margin-top:9px;max-height:190px;overflow:auto;font-size:12px;line-height:1.6;color:#c9d0dd}.log div{padding:5px 0;border-bottom:1px solid #272d39}.clue{color:var(--clue)}.success{color:var(--accent);font-weight:600}.note{color:var(--muted);font-size:10px;margin-top:8px;line-height:1.5}
 </style>
 </head>
 <body>
 <main>
-<h1>六界石・実験場プロトタイプ</h1>
-<div class="sub">小さな森に、ひとつの「何か」がある。正解を探すより、気になったことを試してみよう。</div>
-<div id="world">
-<div class="label">森 ― 好きな場所をタップして歩く</div>
-<div id="player" class="obj player"></div><div id="stone" class="obj stone"></div><div id="npc" class="obj npc"></div>
-<div id="plants"></div><div id="signal" class="signal" style="display:none"></div>
+<h1>六界石・最小体験プロトタイプ v2</h1>
+<div class="sub">目的：未知の六界石を、会話と観察から推理し、自分で探して発見する。石は発見するまで画面に表示しない。</div>
+<div class="world" id="world">
+  <div class="compass"><b>N</b><br>↑<br>W ← → E<br>↓<br>S</div>
+  <div class="region ne"></div><div class="region center"></div><div class="region sw"></div>
+  <div class="region-label r-ne">森の北東</div><div class="region-label r-center">森の中央</div><div class="region-label r-sw">森の南西</div>
+  <div class="player" id="player"></div><div class="npc" id="npc"></div>
 </div>
 <div class="panel">
-<div id="status" class="status"></div>
-<div class="buttons">
-<button id="touch">石に触れる</button><button id="plant">植物を植える</button>
-<button id="talk">旅人に話す</button><button id="bring">旅人を連れてくる</button>
-<button id="hide">石を隠す</button><button id="tell">石の話をする</button>
-<button id="lie">旅人に嘘をつく</button><button id="wait">しばらく待つ</button>
-<button id="search">石を探す</button><button id="observe">周囲を観察する</button>
-</div>
-<div id="log" class="log"></div>
-<div class="note">実験の基本：観察 → 仮説 → 行動 → 予想外の反応 → もう一度試す。</div>
+  <div class="status" id="status"></div>
+  <div class="buttons">
+    <button id="talkBtn">旅人に話す</button>
+    <button id="observeBtn">周囲を観察する</button>
+    <button id="searchBtn" class="primary">石を探す</button>
+    <button id="touchBtn" class="locked" disabled>石に触れる</button>
+  </div>
+  <div class="log" id="log"></div>
+  <div class="note">操作：フィールドをタップして自由移動。まず情報を集め、気になる場所へ移動して観察し、仮説を立てて「石を探す」。発見後だけ「石に触れる」が有効になる。</div>
 </div>
 </main>
 <script>
-const S={
- p:{x:18,y:68,knows:false}, s:{x:68,y:34,known:false,moved:false,hidden:false,touched:0},
- n:{x:43,y:72,near:false,records:[]}, plants:[],waiting:0,logs:[],signal:false
-};
-const $=id=>document.getElementById(id),world=$("world");
-function d(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
-function nearStone(){return d(S.p,S.s)<15}
-function nearNpc(){return d(S.p,S.n)<15}
-function region(x,y){if(y<45&&x>55)return "北東";if(y<45&&x<=55)return "北西";if(y>=45&&x>55)return "南東";return "南西"}
-function memoryText(){return S.n.records.map((r,i)=>`${i+1}. 「${r.text}」／確信度${Math.round(r.certainty*100)}%${r.suspicious?"／疑わしい":""}`).join("  ")}
-function log(t){S.logs.push(t);render()}
-function render(){
- $("player").style.left=S.p.x+"%";$("player").style.top=S.p.y+"%";
- $("stone").style.left=S.s.x+"%";$("stone").style.top=S.s.y+"%";
- $("npc").style.left=S.n.x+"%";$("npc").style.top=S.n.y+"%";
- $("stone").style.display=S.s.hidden?"none":"block";
-$("plants").innerHTML=S.plants.map((p,i)=>{
- const names=["種","芽","葉","蕾","花"];
- return '<div class="seed" style="left:'+p.x+'%;top:'+p.y+'%"><div class="seed-dot"></div><div class="plant-label">'+names[p.growth]+'</div></div>';
- }).join("");
- $("signal").style.display=S.signal?"block":"none";$("signal").style.left="82%";$("signal").style.top="70%";
- let t=nearStone()&&!S.s.hidden?"妙な気配がする。":"森を歩いている。";
- if(S.p.knows)t+=" あの場所について、何かを知っている。";
- if(S.plants.length)t+=` 植物：${S.plants.length}本。`;
- if(S.s.hidden)t+=" 石は見えない。";
- if(S.n.near)t+=" 旅人が石の近くにいる。";
- if(S.n.records.length)t+=` 旅人の記録：${S.n.records.length}件。`;
- $("status").textContent=t;$("log").innerHTML=S.logs.map(x=>"<div>"+x+"</div>").join("");$("log").scrollTop=99999;
-}
-world.addEventListener("pointerup",e=>{
- if(e.target!==world)return;
- const r=world.getBoundingClientRect();
- S.p.x=Math.max(3,Math.min(97,(e.clientX-r.left)/r.width*100));S.p.y=Math.max(5,Math.min(95,(e.clientY-r.top)/r.height*100));
- log("MANAは森の別の場所へ歩いた。");
-});
-$("touch").onclick=()=>{
- if(S.s.hidden){log("そこに石は見当たらない。");return}
- if(!nearStone()){log("石は少し遠い。近づいてみよう。");return}
- S.s.known=true;S.p.knows=true;S.s.touched++;
- log("石に触れた。冷たいはずなのに、掌の奥だけがわずかに温かい。");
- if(S.s.touched===1)log("atOS記録：未分類の共鳴反応。対象の正体は判定不能。");
- else if(S.s.touched===2)log("今度は、触れる直前に石の位置がほんの少しずれた気がした。");
- else log("今回は何も起きない。……本当に？");
-};
-$("plant").onclick=()=>{
- const x=S.p.x,y=S.p.y, near=nearStone()&&!S.s.hidden;
- const p={x,y,growth:1,nearStone:near};
- S.plants.push(p);
- log(near?"石の近くに小さな種を植えた。":"森の一角に小さな種を植えた。");
- log(near?(S.s.touched>0?"土の中から、ほんの一瞬だけ淡い光が見えた。":"今のところ、普通の種にしか見えない。"):"石から離れた場所では、今のところ普通の種に見える。");
-};
-$("talk").onclick=()=>{
- if(S.n.near){
-   if(S.n.records.length===0) log("旅人「この近く、なんだか落ち着かないね。」");
-   else if(S.n.records.length===1) log(`旅人「前に聞いた話では、石は森の${region(S.s.x,S.s.y)}にあるんだよね。」`);
-   else {
-     log("旅人の記憶："+memoryText());
-     log("旅人「前は北東だと聞いた。でも今は別の場所だと言われた……どっちが本当なんだろう？」");
-     if(!S.s.hidden) log(`旅人「実際の石は今、森の${region(S.s.x,S.s.y)}にあるみたいだね。」`);
-   }
- }else log("旅人「この森には、昔から変な場所があるらしいよ。」");
-};
-$("bring").onclick=()=>{
- if(!S.p.knows){log("まずは自分で何か見つけてみよう。");return}
- S.n.x=S.s.x-18;S.n.y=S.s.y+18;S.n.near=true;
- log("MANAは旅人を石の近くまで連れてきた。");
- if(S.plants.length)log("旅人「……植物まで、ここの周りだけ妙だね。」");
-};
-$("tell").onclick=()=>{
- if(!S.p.knows){log("まだ旅人に伝えられるほどの情報がない。");return}
- S.n.records.push({text:"森の北東に不思議な石がある",type:"証言",certainty:.72});
- log("MANAは旅人に石について知っていることを話した。");
- log("旅人の記録に新しい情報が加わった：『森の北東に不思議な石がある』／確信度72%");
-};
-$("lie").onclick=()=>{
- S.n.records.push({text:"石は森の西側にある",type:"証言",certainty:.25,suspicious:true});
- log("MANAは旅人に、石は『森の西側にある』と嘘をついた。");
- log("旅人は少し疑っているが、以前の情報を捨ててはいない。");
-};
-$("hide").onclick=()=>{
- if(!nearStone()){log("隠すなら石のそばまで行こう。");return}
- S.s.hidden=true;S.p.knows=true;
- log("MANAは石を草むらの奥へ隠した。見た目には完全に見えなくなった。");
-};
-$("wait").onclick=()=>{
- S.waiting++;
- log("しばらく何もせず、森を眺めた。");
- if(S.waiting===1){S.signal=true;log("遠くで、何かが一度だけ光った。");}
- else if(S.waiting===2){
-   S.signal=false;
-   const old={x:S.s.x,y:S.s.y};const spots=[[78,62],[25,25],[61,78],[83,25]];
-   const q=spots[Math.floor(Math.random()*spots.length)];
-   const dx=q[0]-old.x,dy=q[1]-old.y;
-   if(!S.s.hidden){
-     S.s.x=q[0];S.s.y=q[1];S.s.moved=true;
-     S.plants.forEach(p=>{if(p.nearStone){p.x+=dx;p.y+=dy;p.carried=true;p.growth=Math.min(4,p.growth+1);}});
-     log("……いつの間にか、石が別の場所にある。");
-     const carried=S.plants.filter(p=>p.carried).length;
-     if(carried)log("石の近くに植えた植物も、石と一緒に移動している。理由は分からない。");
-     log("世界記録：石の移動原因は記録されていない。");
-     if(S.n.records.length)log("旅人は複数の情報を保持している。古い記録も消えていない。");
-   }else{S.s.hidden=false;S.s.x=78;S.s.y=62;log("隠したはずの石が、森の別の場所に現れている。");}
- }else{
-   const roll=Math.random();
-   if(roll<0.18){log("風が止まった。森の音が一瞬だけ遠くなる。");}
-   else if(roll<0.36){S.n.x=Math.max(8,Math.min(92,S.n.x+(Math.random()-.5)*24));S.n.y=Math.max(12,Math.min(88,S.n.y+(Math.random()-.5)*20));S.n.near=false;log("気づくと、旅人の姿が少し遠くなっている。");}
-   else if(roll<0.54){S.plants.forEach(p=>{if(Math.random()<.6)p.growth=Math.min(4,p.growth+1)});if(S.plants.length)log("森のどこかで、植物の葉が揺れた。いくつかの植物が少し成長している。");else log("遠くで鳥が一度だけ鳴いた。");}
-   else if(roll<0.72){S.signal=true;log("森の奥で、何かが地面を擦るような音がした。");}
-   else if(roll<0.9 && !S.s.hidden){
-     const old={x:S.s.x,y:S.s.y},spots=[[78,62],[25,25],[61,78],[83,25]],q=spots[Math.floor(Math.random()*spots.length)];
-     const dx=q[0]-old.x,dy=q[1]-old.y;S.s.x=q[0];S.s.y=q[1];S.s.moved=true;
-     S.plants.forEach(p=>{if(p.nearStone){p.x+=dx;p.y+=dy;p.carried=true;p.growth=Math.min(4,p.growth+1)}});
-     log("……視線を戻すと、石が別の場所にある。");
-     const carried=S.plants.filter(p=>p.carried).length;if(carried)log("石の近くに植えた植物も、一緒に移動している。");
-     log("世界記録：石の移動原因は記録されていない。");
-   }else log("しばらく待った。何も起きなかった……ように見える。");
- }
-};
-$("search").onclick=()=>{
- if(!S.s.hidden && nearStone()){S.p.knows=true;log("探索の末、石を見つけた。");return}
- if(S.s.hidden){
-   const chance=Math.random();
-   if(chance>.45){S.s.hidden=false;S.p.knows=true;log("草むらを調べて、石を見つけた。……隠した場所から少しずれている。");}
-   else log("探したが見つからない。草むらには、奇妙な跡だけが残っている。");
- }else{log("探索したが、石は見つからなかった。");if(S.n.records.length)log("旅人「前に聞いた場所の記録も残っている。どの話が正しいんだろう……」");}
-};
-$("observe").onclick=()=>{
- if(S.signal){S.signal=false;log("遠くの地面に、小さな焦げ跡がある。何が起きたのかは分からない。");return}
- if(S.plants.length){
-   S.plants.forEach(p=>{if(p.growth<4)p.growth++;});
-   const names=["種","芽","葉","蕾","花"];
-   const summary=S.plants.map((p,i)=>`植物${i+1}：${names[p.growth]}${p.nearStone?"（石の近く）":"（遠い場所）"}`).join("／");
-   log("植物を観察した。"+summary);
-   const near=S.plants.filter(p=>p.nearStone),far=S.plants.filter(p=>!p.nearStone);
-   if(near.length&&far.length)log("石の近くと遠くの植物を比べられる。成長速度に違いがあるようだ。");
- }else if(S.s.moved)log("石がいた場所の草だけ、周囲よりわずかに濃い。");
- else log("周囲は普通の森に見える。……少なくとも、今は。");
-};
-log("世界が生成された。森には、ひとつの『何か』が存在している。");
-log("植える場所は自由だ。石の近くと遠くで、何か違いがあるかもしれない。");
-render();
+const state={player:{x:18,y:72,knowledge:{travelerRumor:false,observedNE:false,stoneKnown:false}},stone:{x:76,y:25,discovered:false,active:true},npc:{x:42,y:70,talkCount:0},log:[],phase:'unknown'};
+const $=id=>document.getElementById(id),world=$("world"),playerEl=$("player"),npcEl=$("npc"),statusEl=$("status"),logEl=$("log");
+function clamp(v,min,max){return Math.max(min,Math.min(max,v))} function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y)} function stoneDistance(){return Math.hypot(state.player.x-state.stone.x,state.player.y-state.stone.y)}
+function addLog(t,cls=''){state.log.push({t,cls});render()}
+function render(){playerEl.style.left=state.player.x+'%';playerEl.style.top=state.player.y+'%';npcEl.style.left=state.npc.x+'%';npcEl.style.top=state.npc.y+'%';const nearNpc=dist(state.player,state.npc)<14;let s='森を歩いている。';if(nearNpc)s+=' 旅人が近くにいる。';if(state.player.knowledge.travelerRumor&&!state.player.knowledge.observedNE)s+=' 旅人から聞いた話が気になっている。';if(state.player.knowledge.observedNE&&!state.player.knowledge.stoneKnown)s+=' この辺りには何か手掛かりがある。';if(state.player.knowledge.stoneKnown&&!state.stone.discovered)s+=' 石がこの近くにあるという仮説が強まった。';if(state.stone.discovered)s+=' 六界石を発見した。';statusEl.textContent=s;logEl.innerHTML=state.log.map(x=>`<div class="${x.cls}">${x.t}</div>`).join('');logEl.scrollTop=logEl.scrollHeight;$("touchBtn").disabled=!state.stone.discovered;$("touchBtn").classList.toggle('locked',!state.stone.discovered);$("touchBtn").classList.toggle('primary',state.stone.discovered)}
+world.addEventListener('pointerdown',e=>{if(e.target.closest('button'))return;const r=world.getBoundingClientRect();state.player.x=clamp((e.clientX-r.left)/r.width*100,4,96);state.player.y=clamp((e.clientY-r.top)/r.height*100,7,94);addLog('MANAはその場所へ歩いた。')});
+$("talkBtn").onclick=()=>{if(dist(state.player,state.npc)>16){addLog('旅人は少し離れている。近づいて話してみよう。');return}if(state.npc.talkCount===0){state.npc.talkCount=1;state.player.knowledge.travelerRumor=true;addLog('旅人「その石なら、昔ここで見たって話を聞いたことがある。」');addLog('旅人「森の北東に不思議な石があるって話だったよ。」','clue')}else addLog('旅人「森の北東……だったと思う。昔の話だから、確かじゃないけど。」');render()};
+$("observeBtn").onclick=()=>{const p=state.player;if(p.y<48&&p.x>52){if(!state.player.knowledge.observedNE){state.player.knowledge.observedNE=true;addLog('周囲を観察する。','clue');addLog('近くの草木だけ、季節より少し早く芽吹いている。','clue');addLog('旅人の話と、この場所の変化が結びつく。','clue')}else addLog('もう一度観察した。やはり、この辺りだけ草木の様子が違う。','clue')}else{addLog('周囲は普通の森に見える。');if(state.player.knowledge.travelerRumor)addLog('旅人の話を確かめるなら、北東の方を見てみる必要がありそうだ。','clue')}};
+$("searchBtn").onclick=()=>{if(state.stone.discovered){addLog('もう六界石は発見している。','success');return}const d=stoneDistance();if(d<13){state.stone.discovered=true;state.player.knowledge.stoneKnown=true;state.phase='discovered';addLog('周囲を探す。……何かが、草の陰にある。','success');addLog('六界石を発見した。','success')}else if(state.player.knowledge.observedNE){addLog('この辺りを探したが、六界石は見つからなかった。');addLog('観察で得た手掛かりをもう少し絞り込めそうだ。','clue')}else if(state.player.knowledge.travelerRumor){addLog('この辺りには六界石の手掛かりがないようだ。旅人の話を思い出す。','clue')}else addLog('探したが、何を手掛かりにすればいいのか分からない。まず周囲や旅人から情報を集めよう。');render()};
+$("touchBtn").onclick=()=>{if(!state.stone.discovered)return;addLog('六界石に触れる。冷たいはずなのに、掌の奥だけがわずかに温かい。','success');addLog('発見後の接触まで成立。ここで最小体験を終了できる。','success')};
+// 第二段階用の既存機能は、この最小体験ではUIから切り離して保持する。
+const legacyActions={bringTraveler(){},hideStone(){},discussStone(){},lieToTraveler(){},wait(){},plant(){},moveStone(){},searchHiddenStone(){}};
+addLog('世界が生成された。六界石の場所は、最初からは分からない。');render();
 </script>
 </body>
 </html>
