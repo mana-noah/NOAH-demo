@@ -29,6 +29,7 @@ h1{font-size:20px;margin:0 0 4px}.sub{font-size:12px;color:var(--muted);line-hei
 <main>
 <h1>六界石・探索体験プロトタイプ v3</h1>
 <div class="sub">目的：未知の六界石を、会話・NPCの行動・情報操作・植物の成長・観察から推理して探す。石は発見するまで表示しない。</div>
+<div class="panel" id="objectivePanel"><div style="font-size:12px;color:var(--muted)">今回の目的</div><div style="font-size:17px;font-weight:700;margin-top:3px">六界石を探し出す</div><div style="font-size:11px;color:var(--muted);margin-top:4px">情報を集め、自分で場所を推理してみよう。</div></div>
 <div class="world" id="world">
   <div class="compass"><b>N</b><br>↑<br>W ← → E<br>↓<br>S</div>
   <div class="region ne"></div><div class="region center"></div><div class="region sw"></div>
@@ -46,6 +47,12 @@ h1{font-size:20px;margin:0 0 4px}.sub{font-size:12px;color:var(--muted);line-hei
     <button id="touchBtn" class="locked" disabled>石に触れる</button>
   </div>
   <div class="log" id="log"></div>
+  <div id="complete" style="display:none;margin-top:10px;padding:16px;border:2px solid var(--accent);border-radius:16px;background:#1b2b22;text-align:center">
+    <div style="font-size:11px;color:var(--accent);letter-spacing:.08em">SEARCH COMPLETE</div>
+    <div style="font-size:22px;font-weight:800;margin-top:4px">六界石を発見！</div>
+    <div style="font-size:13px;line-height:1.6;margin-top:7px">未知だった六界石を、自分で探し出した。</div>
+    <div style="font-size:12px;color:var(--muted);margin-top:5px">探索体験クリア</div>
+  </div>
   <div class="note">操作：フィールドをタップして移動。旅人は自分でも探索する。植物は時間と石との距離に応じて成長する。「旅人に情報を教える」は真偽を含めて旅人の次の探索先を変える。</div>
 </div>
 </main>
@@ -81,6 +88,7 @@ function render(){
   if(state.player.knowledge.observedNE)s+=' 北東の環境に変化を見つけた。';
   if(state.plants.length)s+=' 植物を'+state.plants.length+'か所に植えている。';
   if(state.stone.discovered)s+=' 六界石を発見した。';
+  if(state.stone.discovered){$("complete").style.display='block';}
   statusEl.textContent=s;
   logEl.innerHTML=state.log.map(x=>'<div class="'+x.cls+'">'+x.t+'</div>').join('');
   logEl.scrollTop=logEl.scrollHeight;
@@ -151,6 +159,7 @@ $("searchBtn").onclick=()=>{
     state.stone.discovered=true;state.player.knowledge.stoneKnown=true;state.phase='discovered';
     addLog('周囲を探す。……何かが、草の陰にある。','success');
     addLog('六界石を発見した。','success');
+    addLog('探索成功！ 六界石を自分の足で探し出した。','success');
   }else{
     if(state.player.knowledge.observedNE)addLog('この辺りを探したが、六界石は見つからなかった。手掛かりを別の場所と比べてみよう。','clue');
     else if(state.player.knowledge.travelerRumor)addLog('この辺りには六界石の手掛かりがないようだ。旅人の話を思い出す。','clue');
