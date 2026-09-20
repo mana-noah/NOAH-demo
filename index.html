@@ -3,212 +3,83 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<title>六界石・探索体験プロトタイプ v3</title>
+<title>六界石・探索体験プロトタイプ v4 ターン制</title>
 <style>
 :root{--bg:#10121a;--panel:#181c27;--line:#303747;--text:#eef2f7;--muted:#aeb7c7;--accent:#b7e5c0;--clue:#d9c48b;--npc:#d0a5e8}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif}
 main{max-width:760px;margin:auto;padding:16px 14px 28px}
 h1{font-size:20px;margin:0 0 4px}.sub{font-size:12px;color:var(--muted);line-height:1.55;margin-bottom:12px}
-.world{position:relative;height:390px;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:linear-gradient(#1a2a1d,#111b14 72%,#0e1511);touch-action:none;user-select:none}
+.world{position:relative;height:390px;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:linear-gradient(#1a2a1d,#111b14 72%,#0e1511);user-select:none}
 .world:before{content:"";position:absolute;inset:0;opacity:.23;background-image:linear-gradient(35deg,transparent 48%,#6c805d 49%,transparent 51%),linear-gradient(-35deg,transparent 48%,#6c805d 49%,transparent 51%);background-size:90px 90px}
 .compass{position:absolute;right:12px;top:10px;z-index:4;font-size:11px;color:#d6ddce;line-height:1.25;text-align:center;opacity:.75}.compass b{font-size:13px}
 .region{position:absolute;z-index:1;border:1px dashed rgba(214,221,206,.18);border-radius:50%;pointer-events:none}.region.ne{left:55%;top:8%;width:38%;height:38%}.region.center{left:28%;top:31%;width:40%;height:38%}.region.sw{left:7%;top:58%;width:38%;height:30%}
 .region-label{position:absolute;z-index:2;font-size:9px;color:rgba(214,221,206,.42);pointer-events:none}.r-ne{right:14%;top:43%}.r-center{left:39%;top:67%}.r-sw{left:10%;top:84%}
 .player,.npc,.plant{position:absolute;z-index:5;transform:translate(-50%,-50%);user-select:none}
 .player{width:34px;height:34px;border-radius:50%;background:#dce8ff;border:3px solid #7185aa;box-shadow:0 0 14px #b9d0ff88}.player:after{content:"MANA";position:absolute;top:35px;left:50%;transform:translateX(-50%);font-size:10px;color:#dce8ff;white-space:nowrap}
-.npc{width:32px;height:32px;border-radius:8px;background:var(--npc);border:3px solid #76568a;transition:left .45s linear,top .45s linear}.npc:after{content:"旅人";position:absolute;top:34px;left:50%;transform:translateX(-50%);font-size:10px;color:#e7d9ef;white-space:nowrap}
+.npc{width:32px;height:32px;border-radius:8px;background:var(--npc);border:3px solid #76568a}.npc:after{content:"旅人";position:absolute;top:34px;left:50%;transform:translateX(-50%);font-size:10px;color:#e7d9ef;white-space:nowrap}
 .plant{width:20px;height:20px;border-radius:50%;border:2px solid #7ca36d;background:#203a22;z-index:4}.plant:after{content:"";position:absolute;left:50%;top:50%;width:4px;height:15px;background:#7ca36d;transform:translate(-50%,-15%)}
 .plant.s2{width:25px;height:25px;background:#2a512d}.plant.s3{width:32px;height:32px;background:#376b3c;box-shadow:0 0 9px #8ebd7b55}
 .panel{margin-top:10px;padding:12px;border:1px solid var(--line);border-radius:16px;background:var(--panel)}
-.status{font-size:13px;line-height:1.55;min-height:42px}.buttons{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:9px}button{border:1px solid #3b4558;background:#222838;color:var(--text);border-radius:12px;min-height:47px;font-size:14px;font-weight:600}button:active{transform:scale(.98);background:#2b3345}button:disabled{opacity:.35}.primary{border-color:#5d7965;background:#203027}.locked{border-color:#4d4a3d;color:#d8cfaa}
+.status{font-size:13px;line-height:1.55;min-height:42px}.turn{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--line)}.turn b{font-size:16px}.turn span{font-size:11px;color:var(--muted)}
+.buttons{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:9px}button{border:1px solid #3b4558;background:#222838;color:var(--text);border-radius:12px;min-height:47px;font-size:14px;font-weight:600}button:active{transform:scale(.98);background:#2b3345}button:disabled{opacity:.35}.primary{border-color:#5d7965;background:#203027}.locked{border-color:#4d4a3d;color:#d8cfaa}
 .log{margin-top:9px;max-height:205px;overflow:auto;font-size:12px;line-height:1.6;color:#c9d0dd}.log div{padding:5px 0;border-bottom:1px solid #272d39}.clue{color:var(--clue)}.success{color:var(--accent);font-weight:600}.warn{color:#d7a6a6}.note{color:var(--muted);font-size:10px;margin-top:8px;line-height:1.5}
+#complete{display:none;margin-top:10px;padding:16px;border:2px solid var(--accent);border-radius:16px;background:#1b2b22;text-align:center}
 </style>
 </head>
 <body>
 <main>
-<h1>六界石・探索体験プロトタイプ v3</h1>
-<div class="sub">目的：未知の六界石を、会話・NPCの行動・情報操作・植物の成長・観察から推理して探す。石は発見するまで表示しない。</div>
-<div class="panel" id="objectivePanel"><div style="font-size:12px;color:var(--muted)">今回の目的</div><div style="font-size:17px;font-weight:700;margin-top:3px">六界石を探し出す</div><div style="font-size:11px;color:var(--muted);margin-top:4px">情報を集め、自分で場所を推理してみよう。</div></div>
+<h1>六界石・探索体験プロトタイプ v4</h1>
+<div class="sub">目的：未知の六界石を、会話・旅人の行動・嘘・植物の成長・観察から推理して探す。あなたが一手行動するたび、旅人も一手進む。</div>
+<div class="panel"><div style="font-size:12px;color:var(--muted)">今回の目的</div><div style="font-size:17px;font-weight:700;margin-top:3px">六界石を探し出す</div><div style="font-size:11px;color:var(--muted);margin-top:4px">情報を集め、旅人より先に場所を推理してみよう。</div></div>
 <div class="world" id="world">
-  <div class="compass"><b>N</b><br>↑<br>W ← → E<br>↓<br>S</div>
-  <div class="region ne"></div><div class="region center"></div><div class="region sw"></div>
-  <div class="region-label r-ne">森の北東</div><div class="region-label r-center">森の中央</div><div class="region-label r-sw">森の南西</div>
-  <div class="player" id="player"></div><div class="npc" id="npc"></div>
+<div class="compass"><b>N</b><br>↑<br>W ← → E<br>↓<br>S</div>
+<div class="region ne"></div><div class="region center"></div><div class="region sw"></div>
+<div class="region-label r-ne">森の北東</div><div class="region-label r-center">森の中央</div><div class="region-label r-sw">森の南西</div>
+<div class="player" id="player"></div><div class="npc" id="npc"></div>
 </div>
 <div class="panel">
-  <div class="status" id="status"></div>
-  <div class="buttons">
-    <button id="talkBtn">旅人に話す</button>
-    <button id="observeBtn">周囲を観察する</button>
-    <button id="plantBtn">植物を植える</button>
-    <button id="lieBtn">旅人に情報を教える</button>
-    <button id="searchBtn" class="primary">石を探す</button>
-    <button id="touchBtn" class="locked" disabled>石に触れる</button>
-  </div>
-  <div class="log" id="log"></div>
-  <div id="complete" style="display:none;margin-top:10px;padding:16px;border:2px solid var(--accent);border-radius:16px;background:#1b2b22;text-align:center">
-    <div style="font-size:11px;color:var(--accent);letter-spacing:.08em">SEARCH COMPLETE</div>
-    <div style="font-size:22px;font-weight:800;margin-top:4px">六界石を発見！</div>
-    <div style="font-size:13px;line-height:1.6;margin-top:7px">未知だった六界石を、自分で探し出した。</div>
-    <div style="font-size:12px;color:var(--muted);margin-top:5px">探索体験クリア</div>
-  </div>
-  <div class="note">操作：フィールドをタップして移動。旅人は自分でも探索する。植物は時間と石との距離に応じて成長する。「旅人に情報を教える」は真偽を含めて旅人の次の探索先を変える。</div>
+<div class="turn"><b id="turnLabel">MANAのターン</b><span id="turnCount">ターン 1</span></div>
+<div class="status" id="status"></div>
+<div class="buttons">
+<button id="northBtn">北へ移動</button><button id="southBtn">南へ移動</button>
+<button id="westBtn">西へ移動</button><button id="eastBtn">東へ移動</button>
+<button id="talkBtn">旅人に話す</button><button id="observeBtn">周囲を観察する</button>
+<button id="plantBtn">植物を植える</button><button id="lieBtn">旅人に嘘を教える</button>
+<button id="searchBtn" class="primary">石を探す</button><button id="touchBtn" class="locked" disabled>石に触れる</button>
+</div>
+<div class="log" id="log"></div>
+<div id="complete">
+<div style="font-size:11px;color:var(--accent);letter-spacing:.08em">SEARCH COMPLETE</div>
+<div style="font-size:22px;font-weight:800;margin-top:4px">六界石を発見！</div>
+<div style="font-size:13px;line-height:1.6;margin-top:7px">未知だった六界石を、自分で探し出した。</div>
+<div style="font-size:12px;color:var(--muted);margin-top:5px">探索体験クリア</div>
+</div>
+<div class="note">操作：コマンドを1つ選ぶと、その後に旅人も1行動する。移動は4方向のコマンド。植物はターン経過で成長する。「旅人に嘘を教える」は旅人の次の探索先を変える。</div>
 </div>
 </main>
 <script>
-const state={
-  player:{x:18,y:72,knowledge:{travelerRumor:false,observedNE:false,stoneKnown:false}},
-  stone:{x:76,y:25,discovered:false},
-  npc:{x:42,y:70,target:{x:30,y:58},searchIndex:4,believed:null,searching:true},
-  plants:[],
-  log:[],
-  phase:'unknown'
-};
-const searchSpots=[
-  {x:76,y:25,name:'北東'},
-  {x:64,y:36,name:'北東寄り'},
-  {x:45,y:25,name:'北'},
-  {x:70,y:58,name:'東'},
-  {x:30,y:58,name:'中央'},
-  {x:20,y:78,name:'南西'}
-];
-const $=id=>document.getElementById(id),world=$("world"),playerEl=$("player"),npcEl=$("npc"),statusEl=$("status"),logEl=$("log");
+const state={player:{x:18,y:72,knowledge:{travelerRumor:false,observedNE:false}},stone:{x:76,y:25,discovered:false},npc:{x:42,y:70,target:{x:30,y:58},searchIndex:4,believed:null},plants:[],log:[],turn:1,over:false};
+const searchSpots=[{x:76,y:25,name:'北東'},{x:64,y:36,name:'北東寄り'},{x:45,y:25,name:'北'},{x:70,y:58,name:'東'},{x:30,y:58,name:'中央'},{x:20,y:78,name:'南西'}];
+const $=id=>document.getElementById(id),playerEl=$("player"),npcEl=$("npc"),statusEl=$("status"),logEl=$("log");
 function clamp(v,min,max){return Math.max(min,Math.min(max,v))}
 function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
 function addLog(t,cls=''){state.log.push({t,cls});if(state.log.length>70)state.log.shift();render()}
 function npcTarget(){return state.npc.target||searchSpots[state.npc.searchIndex%searchSpots.length]}
-function plantGrowth(p){return Math.min(3,Math.floor((Date.now()-p.plantedAt)/1000/3)+1)}
-function render(){
-  playerEl.style.left=state.player.x+'%';playerEl.style.top=state.player.y+'%';
-  npcEl.style.left=state.npc.x+'%';npcEl.style.top=state.npc.y+'%';
-  let s='森を歩いている。';
-  if(dist(state.player,state.npc)<15)s+=' 旅人が近くにいる。';
-  if(state.player.knowledge.travelerRumor)s+=' 旅人から聞いた話がある。';
-  if(state.player.knowledge.observedNE)s+=' 北東の環境に変化を見つけた。';
-  if(state.plants.length)s+=' 植物を'+state.plants.length+'か所に植えている。';
-  if(state.stone.discovered)s+=' 六界石を発見した。';
-  if(state.stone.discovered){$("complete").style.display='block';}
-  statusEl.textContent=s;
-  logEl.innerHTML=state.log.map(x=>'<div class="'+x.cls+'">'+x.t+'</div>').join('');
-  logEl.scrollTop=logEl.scrollHeight;
-  $("touchBtn").disabled=!state.stone.discovered;
-  $("touchBtn").classList.toggle('locked',!state.stone.discovered);
-  $("touchBtn").classList.toggle('primary',state.stone.discovered);
-  $("lieBtn").disabled=dist(state.player,state.npc)>17;
-}
-function renderPlants(){
-  document.querySelectorAll('.plant').forEach(e=>e.remove());
-  state.plants.forEach((p,i)=>{
-    const e=document.createElement('div');const g=plantGrowth(p);
-    e.className='plant'+(g===2?' s2':g>=3?' s3':'');e.style.left=p.x+'%';e.style.top=p.y+'%';e.title='成長段階 '+g;e.dataset.i=i;world.appendChild(e);
-  });
-}
-world.addEventListener('pointerdown',e=>{
-  if(e.target.closest('button'))return;
-  const r=world.getBoundingClientRect();
-  state.player.x=clamp((e.clientX-r.left)/r.width*100,4,96);
-  state.player.y=clamp((e.clientY-r.top)/r.height*100,7,94);
-  addLog('MANAはその場所へ歩いた。');renderPlants();
-});
-$("talkBtn").onclick=()=>{
-  if(dist(state.player,state.npc)>16){addLog('旅人は少し離れている。近づいて話してみよう。');return}
-  if(!state.player.knowledge.travelerRumor){
-    state.player.knowledge.travelerRumor=true;
-    addLog('旅人「その石なら、昔ここで見たって話を聞いたことがある。」');
-    addLog('旅人「森の北東に不思議な石があるって話だったよ。」','clue');
-  }else{
-    const t=npcTarget();
-    addLog('旅人「今は'+t.name+'の辺りを探してる。何かありそうな気がするんだ。」','clue');
-  }
-  render();
-};
-$("observeBtn").onclick=()=>{
-  const p=state.player;
-  if(p.y<48&&p.x>52){
-    if(!p.knowledge.travelerRumor){
-      addLog('北東の周囲を観察する。');
-      addLog('特に変わったことは分からない。まずは誰かから話を聞いた方がよさそうだ。');
-      return;
-    }
-    if(!p.knowledge.observedNE){p.knowledge.observedNE=true;addLog('北東の周囲を観察する。','clue');addLog('近くの草木だけ、季節より少し早く芽吹いている。','clue');addLog('旅人の話と、この場所の変化が結びつく。','clue')}
-    else addLog('やはり北東だけ、草木の様子が違う。','clue');
-  }else{
-    addLog('周囲は普通の森に見える。');
-    if(p.knowledge.travelerRumor)addLog('旅人の話を確かめるなら、北東の方を見てみる必要がありそうだ。','clue');
-  }
-};
-$("plantBtn").onclick=()=>{
-  if(state.plants.length>=6){addLog('これ以上は植えられない。今ある植物の成長を観察してみよう。');return}
-  const p={x:state.player.x,y:state.player.y,plantedAt:Date.now()};
-  state.plants.push(p);addLog('この場所に植物を植えた。しばらく様子を見てみよう。','clue');renderPlants();render();
-};
-$("lieBtn").onclick=()=>{
-  if(dist(state.player,state.npc)>17){addLog('旅人が遠くて話せない。');return}
-  const choices=searchSpots.filter(s=>Math.hypot(s.x-state.stone.x,s.y-state.stone.y)>15);
-  const target=choices[Math.floor(Math.random()*choices.length)];
-  state.npc.target={x:target.x,y:target.y};state.npc.believed=target.name;state.npc.searching=true;
-  addLog('MANA「六界石なら、'+target.name+'の方にあるらしいよ。」','warn');
-  addLog('旅人「本当？ じゃあ、そっちを探してみる。」');
-  render();
-};
-$("searchBtn").onclick=()=>{
-  if(state.stone.discovered){addLog('もう六界石は発見している。','success');return}
-  const d=dist(state.player,state.stone);
-  if(d<13){
-    state.stone.discovered=true;state.player.knowledge.stoneKnown=true;state.phase='discovered';
-    addLog('周囲を探す。……何かが、草の陰にある。','success');
-    addLog('六界石を発見した。','success');
-    addLog('探索成功！ 六界石を自分の足で探し出した。','success');
-  }else{
-    if(state.player.knowledge.observedNE)addLog('この辺りを探したが、六界石は見つからなかった。手掛かりを別の場所と比べてみよう。','clue');
-    else if(state.player.knowledge.travelerRumor)addLog('この辺りには六界石の手掛かりがないようだ。旅人の話を思い出す。','clue');
-    else addLog('探したが、何を手掛かりにすればいいのか分からない。まず情報を集めよう。');
-  }
-  render();
-};
-$("touchBtn").onclick=()=>{
-  if(!state.stone.discovered)return;
-  addLog('六界石に触れる。冷たいはずなのに、掌の奥だけがわずかに温かい。','success');
-  addLog('発見後の接触まで成立。今回の探索体験を完了できる。','success');
-};
-function moveNpc(){
-  if(state.stone.discovered)return;
-  const t=npcTarget(),dx=t.x-state.npc.x,dy=t.y-state.npc.y,d=Math.hypot(dx,dy);
-  if(d>3){
-    const step=4;
-    state.npc.x+=dx/d*step;state.npc.y+=dy/d*step;
-    render();
-  }else{
-    if(state.npc.searching){
-      const targetName=t.name;
-      if(state.player.knowledge.travelerRumor){
-        if(Math.hypot(t.x-state.stone.x,t.y-state.stone.y)<13){
-          addLog('旅人が'+targetName+'の辺りを調べた。「……ここじゃないみたいだ。」','clue');
-        }else addLog('旅人が'+targetName+'の辺りを調べている。','clue');
-      }else{
-        addLog('旅人が森の中を調べている。');
-      }
-      state.npc.searchIndex++;
-      state.npc.target=searchSpots[state.npc.searchIndex%searchSpots.length];
-      state.npc.searching=false;
-    }else state.npc.searching=true;
-    render();
-  }
-}
-setInterval(()=>{
-  if(!state.stone.discovered){moveNpc();renderPlants();render();}
-},1200);
-setInterval(()=>{
-  state.plants.forEach((p,i)=>{
-    const g=plantGrowth(p);
-    if(g===3&&!p.reported){p.reported=true;const d=Math.hypot(p.x-state.stone.x,p.y-state.stone.y);if(d<22)addLog('植えた植物がかなり早く成長している。この場所は六界石に近いのかもしれない。','clue');else addLog('植えた植物が成長した。普通の速度に見える。','clue');}
-  });
-  renderPlants();render();
-},1000);
-addLog('世界が生成された。六界石の場所は、最初からは分からない。');
-addLog('旅人も森の中を歩き回っている。');
-render();renderPlants();
+function growth(p){return Math.min(3,1+Math.floor(p.age/3))}
+function render(){playerEl.style.left=state.player.x+'%';playerEl.style.top=state.player.y+'%';npcEl.style.left=state.npc.x+'%';npcEl.style.top=state.npc.y+'%';let s='森を歩いている。';if(dist(state.player,state.npc)<16)s+=' 旅人が近くにいる。';if(state.player.knowledge.travelerRumor)s+=' 旅人から聞いた話がある。';if(state.player.knowledge.observedNE)s+=' 北東の環境に変化を見つけた。';if(state.plants.length)s+=' 植物を'+state.plants.length+'か所に植えている。';if(state.stone.discovered)s+=' 六界石を発見した。';statusEl.textContent=s;logEl.innerHTML=state.log.map(x=>'<div class="'+x.cls+'">'+x.t+'</div>').join('');logEl.scrollTop=logEl.scrollHeight;$("turnLabel").textContent=state.over?'探索完了':'MANAのターン';$("turnCount").textContent='ターン '+state.turn;$("touchBtn").disabled=!state.stone.discovered;$("touchBtn").classList.toggle('locked',!state.stone.discovered);$("touchBtn").classList.toggle('primary',state.stone.discovered);const near=dist(state.player,state.npc)<=17;$("talkBtn").disabled=!near;$("lieBtn").disabled=!near;$("complete").style.display=state.stone.discovered?'block':'none';renderPlants()}
+function renderPlants(){document.querySelectorAll('.plant').forEach(e=>e.remove());state.plants.forEach((p,i)=>{const e=document.createElement('div'),g=growth(p);e.className='plant'+(g===2?' s2':g>=3?' s3':'');e.style.left=p.x+'%';e.style.top=p.y+'%';e.title='成長段階 '+g;world.appendChild(e)})}
+function travelerTurn(){if(state.over)return;const t=npcTarget(),dx=t.x-state.npc.x,dy=t.y-state.npc.y,d=Math.hypot(dx,dy);if(d>3){const step=7;state.npc.x+=dx/d*step;state.npc.y+=dy/d*step;addLog('旅人が'+t.name+'へ向かって移動した。');return}if(Math.hypot(t.x-state.stone.x,t.y-state.stone.y)<13){addLog('旅人が'+t.name+'の辺りを調べた。「……ここじゃないみたいだ。」','clue')}else addLog('旅人が'+t.name+'の辺りを調べている。','clue');state.npc.searchIndex++;state.npc.target=searchSpots[state.npc.searchIndex%searchSpots.length];state.npc.believed=null}
+function endTurn(){if(state.over)return;state.plants.forEach(p=>p.age++);travelerTurn();state.turn++;render()}
+function move(dir){if(state.over)return;const step=10;if(dir==='n')state.player.y=clamp(state.player.y-step,7,94);if(dir==='s')state.player.y=clamp(state.player.y+step,7,94);if(dir==='w')state.player.x=clamp(state.player.x-step,4,96);if(dir==='e')state.player.x=clamp(state.player.x+step,4,96);addLog('MANAは'+({n:'北',s:'南',w:'西',e:'東'})[dir]+'へ進んだ。');endTurn()}
+$("northBtn").onclick=()=>move('n');$("southBtn").onclick=()=>move('s');$("westBtn").onclick=()=>move('w');$("eastBtn").onclick=()=>move('e');
+$("talkBtn").onclick=()=>{if(dist(state.player,state.npc)>17){addLog('旅人は少し離れている。近づいて話してみよう。');return}if(!state.player.knowledge.travelerRumor){state.player.knowledge.travelerRumor=true;addLog('旅人「その石なら、昔ここで見たって話を聞いたことがある。」');addLog('旅人「森の北東に不思議な石があるって話だったよ。」','clue')}else{const t=npcTarget();addLog('旅人「今は'+t.name+'の辺りを探してる。何かありそうな気がするんだ。」','clue')}endTurn()};
+$("observeBtn").onclick=()=>{const p=state.player;if(p.y<48&&p.x>52){if(!p.knowledge.travelerRumor){addLog('北東の周囲を観察する。');addLog('特に変わったことは分からない。まずは誰かから話を聞いた方がよさそうだ。');endTurn();return}if(!p.knowledge.observedNE){p.knowledge.observedNE=true;addLog('北東の周囲を観察する。','clue');addLog('近くの草木だけ、季節より少し早く芽吹いている。','clue');addLog('旅人の話と、この場所の変化が結びつく。','clue')}else addLog('やはり北東だけ、草木の様子が違う。','clue')}else{addLog('周囲は普通の森に見える。');if(p.knowledge.travelerRumor)addLog('旅人の話を確かめるなら、北東の方を見てみる必要がありそうだ。','clue')}endTurn()};
+$("plantBtn").onclick=()=>{if(state.plants.length>=6){addLog('これ以上は植えられない。今ある植物の成長を観察してみよう。');return}state.plants.push({x:state.player.x,y:state.player.y,age:0,reported:false});addLog('この場所に植物を植えた。成長を観察してみよう。','clue');endTurn()};
+$("lieBtn").onclick=()=>{if(dist(state.player,state.npc)>17){addLog('旅人が遠くて話せない。');return}const choices=searchSpots.filter(s=>Math.hypot(s.x-state.stone.x,s.y-state.stone.y)>15);const target=choices[Math.floor(Math.random()*choices.length)];state.npc.target={x:target.x,y:target.y};state.npc.believed=target.name;addLog('MANA「六界石なら、'+target.name+'の方にあるらしいよ。」','warn');addLog('旅人「本当？ じゃあ、そっちを探してみる。」');endTurn()};
+$("searchBtn").onclick=()=>{if(state.over){addLog('もう探索は完了している。','success');return}if(dist(state.player,state.stone)<13){state.stone.discovered=true;state.over=true;addLog('周囲を探す。……何かが、草の陰にある。','success');addLog('六界石を発見した。','success');addLog('探索成功！ 旅人より先に、六界石を見つけ出した。','success');render();return}if(state.player.knowledge.observedNE)addLog('この辺りを探したが、六界石は見つからなかった。手掛かりを比べてみよう。','clue');else if(state.player.knowledge.travelerRumor)addLog('この辺りには六界石の手掛かりがないようだ。旅人の話を思い出す。','clue');else addLog('探したが、何を手掛かりにすればいいのか分からない。まず情報を集めよう。');endTurn()};
+$("touchBtn").onclick=()=>{if(!state.stone.discovered)return;addLog('六界石に触れる。冷たいはずなのに、掌の奥だけがわずかに温かい。','success');addLog('探索体験を完了した。','success')};
+addLog('世界が生成された。六界石の場所は、最初からは分からない。');addLog('旅人も同じ森を探索している。あなたが一手動くたび、旅人も一手動く。');render();
 </script>
 </body>
 </html>
