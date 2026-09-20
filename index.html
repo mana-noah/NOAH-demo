@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<title>六界石・探索体験プロトタイプ v6 自由移動＋ターン制</title>
+<title>六界石・探索体験プロトタイプ v7 自由移動＋ターン制</title>
 <style>
 :root{--bg:#10121a;--panel:#181c27;--line:#303747;--text:#eef2f7;--muted:#aeb7c7;--accent:#b7e5c0;--clue:#d9c48b;--npc:#d0a5e8}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -38,7 +38,7 @@ h1{font-size:20px;margin:0 0 4px}.sub{font-size:12px;color:var(--muted);line-hei
 </head>
 <body>
 <main>
-<h1>六界石・探索体験プロトタイプ v6</h1>
+<h1>六界石・探索体験プロトタイプ v7</h1>
 <div class="sub">目的：森を探索し、六界石の手掛かりを集めて場所を推理する。植物は植えた場所によって成長の速さが変わることがある。旅人も同じ石を探している。</div>
 <div class="panel"><div style="font-size:12px;color:var(--muted)">今回の目的</div><div style="font-size:17px;font-weight:700;margin-top:3px">六界石を探し出す</div><div style="font-size:11px;color:var(--muted);margin-top:4px">情報を集め、気になる場所を比べながら、旅人より先に場所を推理してみよう。</div></div>
 <div class="world" id="world">
@@ -89,7 +89,7 @@ $("talkBtn").onclick=()=>{if(dist(state.player,state.npc)>17)return;if(!state.pl
 $("observeBtn").onclick=()=>{const p=state.player,d=dist(p,state.stone);if(d<20){p.knowledge.observedNE=true;addLog('周囲を観察する。','clue');addLog('この周辺だけ、草木の成長が少し早いように見える。','clue');addLog('何かがこの場所の環境に影響しているのかもしれない。','clue')}else if(d<40){p.knowledge.observedNE=true;addLog('周囲を観察する。');addLog('少し気になる変化はあるが、はっきりとは分からない。','clue')}else{addLog('周囲を観察する。');addLog('特に変わった様子はない。ただの森のようだ。')}endTurn()};
 $("plantBtn").onclick=()=>{if(state.plants.length>=6){addLog('これ以上は植えられない。今ある植物の成長を観察してみよう。');return}const id=state.plants.length+1;state.plants.push({id,x:state.player.x,y:state.player.y,growth:0,lastGrowth:1,turns:0});state.selectedPlant=id;addLog(plantLabel(state.plants[state.plants.length-1])+'を植えた。別の場所にも植えて、成長の違いを比べてみよう。','clue');plantInfo.style.display='block';endTurn()};
 $("lieBtn").onclick=()=>{if(dist(state.player,state.npc)>17)return;const choices=searchSpots.filter(s=>s.name!=='北東');const target=choices[Math.floor(Math.random()*choices.length)];state.npc.aiMode='lie';state.npc.target={x:target.x,y:target.y,name:target.name};state.npc.believed=target.name;addLog('MANA「六界石なら、'+target.name+'の方にあるらしいよ。」','warn');addLog('旅人「本当？ じゃあ、そっちを探してみる。」');endTurn()};
-$("searchBtn").onclick=()=>{if(state.over){addLog('もう探索は完了している。');return}if(dist(state.player,state.stone)<13){addLog('この辺りに六界石がある。手を伸ばせば触れられそうだ。','success');render();return}if(state.player.knowledge.observedNE)addLog('この辺りを探したが、六界石は見つからなかった。手掛かりを比べてみよう。','clue');else if(state.player.knowledge.travelerRumor)addLog('この辺りには六界石の手掛かりがないようだ。旅人の話を思い出す。','clue');else addLog('探したが、何を手掛かりにすればいいのか分からない。まず情報を集めよう。');endTurn()};
+$("searchBtn").onclick=()=>{if(state.over){addLog('もう探索は完了している。');return}if(dist(state.player,state.stone)<13){addLog('この周辺を探す。何かがこの場所の環境に影響しているようだ。','clue');addLog('近くをもう少し調べれば、何かに触れられそうな気がする。','clue');render();return}if(state.player.knowledge.observedNE)addLog('この辺りを探したが、六界石は見つからなかった。手掛かりを比べてみよう。','clue');else if(state.player.knowledge.travelerRumor)addLog('この辺りには六界石の手掛かりがないようだ。旅人の話を思い出す。','clue');else addLog('探したが、何を手掛かりにすればいいのか分からない。まず情報を集めよう。');endTurn()};
 $("touchBtn").onclick=()=>{if(state.over||dist(state.player,state.stone)>=13)return;state.stone.discovered=true;state.over=true;addLog('六界石に触れる。冷たいはずなのに、掌の奥だけがわずかに温かい。','success');addLog('六界石を発見し、触れた。','success');addLog('探索体験を完了した。','success');render()};
 addLog('世界が生成された。六界石の場所は、最初からは分からない。');addLog('森は自由に歩ける。あなたが一手動くたび、旅人も一手進む。旅人はまず北東へ向かう。');addLog('植物を複数の場所に植えると、成長の違いを手掛かりにできる。','clue');render();
 </script>
