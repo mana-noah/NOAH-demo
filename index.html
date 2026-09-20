@@ -53,7 +53,7 @@ h1{font-size:20px;margin:0 0 4px}.sub{font-size:12px;color:var(--muted);line-hei
 const state={
   player:{x:18,y:72,knowledge:{travelerRumor:false,observedNE:false,stoneKnown:false}},
   stone:{x:76,y:25,discovered:false},
-  npc:{x:42,y:70,target:{x:76,y:25},searchIndex:0,believed:null,searching:true},
+  npc:{x:42,y:70,target:{x:30,y:58},searchIndex:4,believed:null,searching:true},
   plants:[],
   log:[],
   phase:'unknown'
@@ -118,6 +118,11 @@ $("talkBtn").onclick=()=>{
 $("observeBtn").onclick=()=>{
   const p=state.player;
   if(p.y<48&&p.x>52){
+    if(!p.knowledge.travelerRumor){
+      addLog('北東の周囲を観察する。');
+      addLog('特に変わったことは分からない。まずは誰かから話を聞いた方がよさそうだ。');
+      return;
+    }
     if(!p.knowledge.observedNE){p.knowledge.observedNE=true;addLog('北東の周囲を観察する。','clue');addLog('近くの草木だけ、季節より少し早く芽吹いている。','clue');addLog('旅人の話と、この場所の変化が結びつく。','clue')}
     else addLog('やはり北東だけ、草木の様子が違う。','clue');
   }else{
@@ -168,9 +173,13 @@ function moveNpc(){
   }else{
     if(state.npc.searching){
       const targetName=t.name;
-      if(Math.hypot(t.x-state.stone.x,t.y-state.stone.y)<13){
-        addLog('旅人が'+targetName+'の辺りを調べた。「……ここじゃないみたいだ。」','clue');
-      }else addLog('旅人が'+targetName+'の辺りを調べている。','clue');
+      if(state.player.knowledge.travelerRumor){
+        if(Math.hypot(t.x-state.stone.x,t.y-state.stone.y)<13){
+          addLog('旅人が'+targetName+'の辺りを調べた。「……ここじゃないみたいだ。」','clue');
+        }else addLog('旅人が'+targetName+'の辺りを調べている。','clue');
+      }else{
+        addLog('旅人が森の中を調べている。');
+      }
       state.npc.searchIndex++;
       state.npc.target=searchSpots[state.npc.searchIndex%searchSpots.length];
       state.npc.searching=false;
@@ -189,7 +198,7 @@ setInterval(()=>{
   renderPlants();render();
 },1000);
 addLog('世界が生成された。六界石の場所は、最初からは分からない。');
-addLog('旅人も六界石を探して動き始めた。','clue');
+addLog('旅人も森の中を歩き回っている。');
 render();renderPlants();
 </script>
 </body>
